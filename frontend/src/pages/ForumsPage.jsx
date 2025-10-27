@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import API from '../api/api';
-import ForumCard from '../components/ForumCard';
+import ForumCard from '../components/Forumcard';
 import { AuthContext } from '../context/AuthContext';
 import { uploadToCloudinary } from '../utils/uploadToCloudinary';
 
