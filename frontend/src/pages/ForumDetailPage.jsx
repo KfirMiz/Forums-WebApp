@@ -148,9 +148,10 @@ export default function ForumDetailPage() {
   return (
     <div style={{ padding: '1rem', maxWidth: 1200, margin: '0 auto' }}>
       <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-        {/* Left Sidebar: Forum Info */}
+        {/* Forum Info Sidebar */}
         {forum && (
           <div
+            className="forum-sidebar"
             style={{
               flex: '0 0 300px',
               minWidth: 250,
@@ -232,8 +233,8 @@ export default function ForumDetailPage() {
           </div>
         )}
 
-        {/* Center Column: Threads */}
-        <div style={{ flex: 1, minWidth: 300 }}>
+        {/* Threads Column */}
+        <div className="threads-column" style={{ flex: 1, minWidth: 300 }}>
           <h3>Threads</h3>
 
           {user ? (
@@ -383,6 +384,13 @@ export default function ForumDetailPage() {
       <style>
         {`
           @media (max-width: 600px) {
+            .forum-sidebar {
+              flex: 1 1 100% !important;
+              position: static !important; /* remove sticky */
+            }
+            .threads-column {
+              flex: 1 1 100% !important;
+            }
             .card {
               flex-direction: column !important;
               align-items: flex-start !important;
