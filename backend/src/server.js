@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors';
 import { connectDB } from './config/db.js';
 import userRoutes from './routes/userRoutes.js';
 import forumRoutes from './routes/forumRoutes.js';
@@ -9,6 +10,12 @@ dotenv.config();
 connectDB();
 
 const app = express();
+
+app.use(cors({
+  origin: 'http://localhost:5173', // frontend URL
+  credentials: true, // allow cookies or auth headers if needed
+}));
+
 app.use(express.json());
 
 // Routes

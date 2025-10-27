@@ -25,9 +25,8 @@ export const register = async (req, res) => {
     const existing = await User.findOne({ username });
     if (existing) return res.status(400).json({ message: 'Username already exists' });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await User.create({ username, password: hashedPassword, pictureUrl });
+    // Let Mongoose hash the password via pre-save hook
+    const user = await User.create({ username, password, pictureUrl });
 
     const token = generateToken(user._id, user.role);
 
@@ -39,6 +38,7 @@ export const register = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 // POST /api/users/login
 export const login = async (req, res) => {
