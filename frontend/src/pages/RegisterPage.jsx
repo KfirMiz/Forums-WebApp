@@ -38,7 +38,7 @@ export default function RegisterPage() {
     try {
       const res = await API.post('/users/register', form);
       login(res.data.user, res.data.token);
-      alert('Registered and logged in!');
+      //alert('Registered and logged in!');
       navigate('/');
     } catch (err) {
       alert(err.response?.data?.message || 'Registration failed');

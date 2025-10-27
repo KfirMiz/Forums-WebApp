@@ -33,24 +33,42 @@ export const updateUser = async (req, res) => {
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const { username, password, pictureUrl } = req.body;
+    const { username, password, currentPassword, pictureUrl } = req.body;
 
     if (username) user.username = username;
+
     if (password) {
+      // Only allow if current password is correct (for non-admins)
+      if (req.user.role !== 'admin') {
+        if (!currentPassword)
+          return res.status(400).json({ message: 'Current password is required' });
+
+        const match = await bcrypt.compare(currentPassword, user.password);
+        if (!match)
+          return res.status(400).json({ message: 'Current password is incorrect' });
+      }
+
       if (!/^(?=.*[A-Za-z])(?=.*\d).+$/.test(password))
         return res.status(400).json({
           message: 'Password must contain at least one letter and one number.',
         });
-      user.password = await bcrypt.hash(password, 10);
+
+      // Just assign the password; Mongoose pre-save hook will hash it
+      user.password = password;
     }
+
     if (pictureUrl) user.pictureUrl = pictureUrl;
 
     await user.save();
-    res.json(user);
+
+    // Return user info without password
+    const { _id, username: uname, role, pictureUrl: picUrl } = user;
+    res.json({ id: _id, username: uname, role, pictureUrl: picUrl });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 // Delete user
 export const deleteUser = async (req, res) => {

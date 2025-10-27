@@ -13,7 +13,7 @@ export default function LoginPage() {
     try {
       const res = await API.post('/users/login', form);
       login(res.data.user, res.data.token);
-      alert('Logged in');
+      //alert('Logged in');
       navigate('/');
     } catch (err) {
       alert(err.response?.data?.message || 'Login failed');

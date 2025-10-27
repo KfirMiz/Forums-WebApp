@@ -8,6 +8,7 @@ export default function ProfilePage() {
   const [form, setForm] = useState({
     username: user?.username || '',
     password: '',
+    currentPassword: '', // <-- new field
     pictureUrl: user?.pictureUrl || ''
   });
   const [uploading, setUploading] = useState(false);
@@ -40,9 +41,15 @@ export default function ProfilePage() {
   const submit = async (e) => {
     e.preventDefault();
     try {
-      const res = await API.put(`/users/${user.id || user._id}`, form);
+      // Only send currentPassword if user entered a new password
+      const payload = { ...form };
+      if (!form.password) delete payload.currentPassword;
+
+      const res = await API.put(`/users/${user.id || user._id}`, payload);
       updateUserLocal({ ...res.data, id: res.data._id || res.data.id });
       alert('Profile updated');
+      // Clear password fields after update
+      setForm((prev) => ({ ...prev, password: '', currentPassword: '' }));
     } catch (err) {
       alert(err.response?.data?.message || 'Update failed');
     }
@@ -57,6 +64,14 @@ export default function ProfilePage() {
           value={form.username}
           onChange={e => setForm({ ...form, username: e.target.value })}
         />
+        
+        <input
+          placeholder="Current password"
+          type="password"
+          value={form.currentPassword}
+          onChange={e => setForm({ ...form, currentPassword: e.target.value })}
+        />
+
         <input
           placeholder="New password (optional)"
           type="password"
