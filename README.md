@@ -1,5 +1,4 @@
 # Forums-WebApp  
-Personal project - full-stack web app for sharing threads and pictures within forums using MERN Stack
-link to the deployed frontend : https://forums-webapp.onrender.com  
-deployment made with free services - about 50 seconds delay for the first HTTP request  
-after the first request got proccessed no delay should occur
+Personal project - full-stack web app for sharing threads and pictures within forums using MERN Stack.
+Link to the deployed frontend : https://forums-webapp.onrender.com  
+Deployment is done using free services, which may cause a ~50-second delay on the first HTTP request. Subsequent requests are processed with no noticeable delay.
