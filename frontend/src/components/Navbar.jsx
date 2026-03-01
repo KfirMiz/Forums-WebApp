@@ -13,22 +13,24 @@ export default function Navbar() {
 
   return (
     <nav className="nav">
-      <div className="nav-left">
-        <Link to="/" className="brand">ForumApp</Link>
-        <Link to="/forums">Forums</Link>
-      </div>
-      <div className="nav-right">
-        {user ? (
-          <>
-            <Link to="/profile">{user.username}</Link>
-            <button onClick={onLogout} className="btn">Logout</button>
-          </>
-        ) : (
-          <>
-            <Link to="/login">Login</Link>
-            <Link to="/register" className="btn">Register</Link>
-          </>
-        )}
+      <div className="container nav-inner">
+        <div className="nav-left">
+          <Link to="/" className="brand">ForumApp</Link>
+          <Link to="/forums" className="pill">Browse</Link>
+        </div>
+        <div className="nav-right">
+          {user ? (
+            <>
+              <Link to="/profile" className="pill">{user.username}</Link>
+              <button onClick={onLogout} className="btn btn-secondary">Logout</button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="pill">Login</Link>
+              <Link to="/register" className="btn">Register</Link>
+            </>
+          )}
+        </div>
       </div>
     </nav>
   );

@@ -56,41 +56,56 @@ export default function ForumsPage() {
   };
 
   return (
-    <div>
-      <h2>Forums</h2>
+    <div className="container">
+      <h2 className="page-title">Forums</h2>
 
       {user ? (
-        <section className="card">
-          <h3>Create Forum</h3>
+        <section className="card" style={{ marginBottom: 16 }}>
+          <h3 style={{ marginTop: 0, marginBottom: 6 }}>Create a forum</h3>
+          <p className="muted" style={{ marginTop: 0, marginBottom: 14 }}>
+            Start a new space for threads. Add an optional cover image.
+          </p>
           <form onSubmit={submit} className="form">
-            <input placeholder="Topic" value={form.topic} onChange={e => setForm({ ...form, topic: e.target.value })} required />
-            <input placeholder="Description" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
+            <div className="grid-2">
+              <input
+                className="input"
+                placeholder="Topic"
+                value={form.topic}
+                onChange={(e) => setForm({ ...form, topic: e.target.value })}
+                required
+              />
+              <input
+                className="input"
+                placeholder="Short description"
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+              />
+            </div>
 
             <div
+              className="dropzone"
               onDrop={handleDrop}
               onDragOver={(e) => e.preventDefault()}
-              style={{
-                border: '2px dashed gray',
-                padding: '1rem',
-                textAlign: 'center',
-                marginBottom: '1rem'
-              }}
             >
-              {uploading
-                ? <p>Uploading...</p>
-                : form.forumPic
-                  ? <img src={form.forumPic} alt="preview" style={{ maxWidth: 150 }} />
-                  : <p>Drag & drop or click to upload forum image</p>}
+              {uploading ? (
+                <p className="muted" style={{ margin: 0 }}>Uploading...</p>
+              ) : form.forumPic ? (
+                <img src={form.forumPic} alt="preview" style={{ maxWidth: 220, borderRadius: 14 }} />
+              ) : (
+                <p className="muted" style={{ margin: 0 }}>Drag & drop or click to upload a forum cover</p>
+              )}
               <input type="file" accept="image/*" onChange={handleBrowse} />
             </div>
 
             <button className="btn" type="submit" disabled={uploading}>
-              {uploading ? 'Uploading...' : 'Create'}
+              {uploading ? 'Uploading...' : 'Create forum'}
             </button>
           </form>
         </section>
       ) : (
-        <p className="muted">Log in to create a forum.</p>
+        <div className="card" style={{ marginBottom: 16 }}>
+          <p className="muted" style={{ margin: 0 }}>Log in to create a forum.</p>
+        </div>
       )}
 
       <section className="list">

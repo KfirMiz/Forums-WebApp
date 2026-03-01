@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useCallback, useEffect, useState, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import API from '../api/api';
 import { AuthContext } from '../context/AuthContext';
@@ -16,7 +16,7 @@ export default function ForumDetailPage() {
   const [uploading, setUploading] = useState(false);
   const { user } = useContext(AuthContext);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       const f = await API.get(`/forums/${id}`);
       setForum(f.data);
@@ -26,22 +26,21 @@ export default function ForumDetailPage() {
         forumPic: f.data.forumPic || ''
       });
       const allThreads = await API.get('/threads');
-      setThreads(
-        allThreads.data.filter(
-          (t) =>
-            t.forumId === id ||
-            t.forumId?._id === id ||
-            t.forumId === (forum?._id || forum?.id)
-        )
-      );
-    } catch (err) {
+      const forumId = String(f.data?._id || id);
+      const normalizeForumId = (val) => {
+        if (!val) return '';
+        if (typeof val === 'string') return val;
+        return val._id ? String(val._id) : '';
+      };
+      setThreads(allThreads.data.filter((t) => normalizeForumId(t.forumId) === forumId));
+    } catch {
       alert('Failed to load forum');
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     load();
-  }, [id]);
+  }, [load]);
 
   const submitThread = async (e) => {
     e.preventDefault();
@@ -146,83 +145,72 @@ export default function ForumDetailPage() {
   };
 
   return (
-    <div style={{ padding: '1rem', maxWidth: 1200, margin: '0 auto' }}>
-      <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+    <div className="container">
+      <div className="split">
         {/* Forum Info Sidebar */}
         {forum && (
           <div
-            className="forum-sidebar"
-            style={{
-              flex: '0 0 300px',
-              minWidth: 250,
-              backgroundColor: '#fff',
-              borderRadius: 8,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              padding: '1rem',
-              marginBottom: '1rem',
-              position: 'sticky',
-              top: 20,
-              alignSelf: 'flex-start',
-            }}
+            className="card sidebar forum-sidebar"
           >
-            <h2 style={{ textAlign: 'left', marginBottom: '0.5rem' }}>{forum.topic}</h2>
+            <h2 className="page-title" style={{ textAlign: 'left', marginTop: 0, marginBottom: 8 }}>
+              {forum.topic}
+            </h2>
             {forum.forumPic && (
               <img
                 src={forum.forumPic}
                 alt={forum.topic}
-                style={{ maxWidth: '100%', borderRadius: 8, marginBottom: '1rem' }}
+                style={{ width: '100%', borderRadius: 14, marginBottom: 12, border: '1px solid rgba(255,255,255,0.12)' }}
               />
             )}
-            <p style={{ marginBottom: '0.5rem' }}>{forum.description}</p>
+            <p className="muted" style={{ marginTop: 0, marginBottom: 10 }}>
+              {forum.description}
+            </p>
             <small className="muted">
               Created: {new Date(forum.creationTime).toLocaleString()}
             </small>
 
             {canEditForum && (
               <div style={{ marginTop: '1rem' }}>
-                <hr />
-                <h4>Edit Forum</h4>
+                <div style={{ height: 14 }} />
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.12)', margin: '10px 0 14px' }} />
+                <h4 style={{ margin: 0 }}>Edit forum</h4>
                 <form onSubmit={handleForumUpdate} className="form">
                   <input
+                    className="input"
                     placeholder="Topic"
                     value={editForum.topic}
                     onChange={(e) => setEditForum({ ...editForum, topic: e.target.value })}
-                    style={{ marginBottom: '0.5rem' }}
                   />
                   <textarea
+                    className="textarea"
                     placeholder="Description"
                     value={editForum.description}
                     onChange={(e) => setEditForum({ ...editForum, description: e.target.value })}
-                    style={{ width: '100%', minHeight: 80, marginBottom: '0.5rem' }}
+                    style={{ minHeight: 90 }}
                   />
 
                   <div
+                    className="dropzone"
                     onDrop={handleDrop}
                     onDragOver={(e) => e.preventDefault()}
-                    style={{
-                      border: '2px dashed gray',
-                      padding: '1rem',
-                      textAlign: 'center',
-                      marginBottom: '1rem',
-                    }}
                   >
                     {uploading
-                      ? <p>Uploading...</p>
+                      ? <p className="muted" style={{ margin: 0 }}>Uploading...</p>
                       : editForum.forumPic
-                        ? <img src={editForum.forumPic} alt="preview" style={{ maxWidth: 150 }} />
-                        : <p>Drag & drop or click to upload forum image</p>}
+                        ? <img src={editForum.forumPic} alt="preview" style={{ maxWidth: 220, borderRadius: 14 }} />
+                        : <p className="muted" style={{ margin: 0 }}>Drag & drop or click to upload a forum cover</p>}
                     <input type="file" accept="image/*" onChange={handleBrowse} />
                   </div>
 
                   <button className="btn" type="submit" disabled={uploading}>
-                    {uploading ? 'Uploading...' : 'Save Changes'}
+                    {uploading ? 'Uploading...' : 'Save changes'}
                   </button>
                 </form>
 
                 {isAdmin && (
                   <button
-                    className="btn"
-                    style={{ backgroundColor: 'red', color: 'white', marginTop: '0.5rem' }}
+                    className="btn btn-danger"
+                    style={{ marginTop: 10 }}
                     onClick={handleForumDelete}
                   >
                     Delete Forum
@@ -234,24 +222,27 @@ export default function ForumDetailPage() {
         )}
 
         {/* Threads Column */}
-        <div className="threads-column" style={{ flex: 1, minWidth: 300 }}>
-          <h3>Threads</h3>
+        <div className="threads-column">
+          <h3 style={{ marginTop: 0 }}>Threads</h3>
 
           {user ? (
-            <form onSubmit={submitThread} className="form card" style={{ marginBottom: '1rem' }}>
+            <form onSubmit={submitThread} className="form card" style={{ marginBottom: 14 }}>
               <textarea
+                className="textarea"
                 placeholder="Thread content"
                 value={form.description}
                 onChange={(e) => setForm({ description: e.target.value })}
                 required
-                style={{ width: '100%', minHeight: 80, padding: '0.5rem', marginBottom: '0.5rem' }}
+                style={{ minHeight: 90 }}
               />
               <button className="btn" type="submit">
                 Create Thread
               </button>
             </form>
           ) : (
-            <p className="muted">Log in to create a thread.</p>
+            <div className="card" style={{ marginBottom: 14 }}>
+              <p className="muted" style={{ margin: 0 }}>Log in to create a thread.</p>
+            </div>
           )}
 
           <div className="list">
@@ -262,72 +253,51 @@ export default function ForumDetailPage() {
               return (
                 <article
                   key={t._id}
-                  className="card"
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    gap: '1rem',
-                    alignItems: 'flex-start',
-                    padding: '1rem',
-                    border: '1px solid #ddd',
-                    borderRadius: '8px',
-                    marginBottom: '1rem',
-                    backgroundColor: '#fafafa',
-                  }}
+                  className="card thread-card"
                 >
-                  {t.userId.pictureUrl && (
-                    <img
-                      src={t.userId.pictureUrl}
-                      alt={t.userId.username}
-                      style={{
-                        width: 50,
-                        height: 50,
-                        borderRadius: '50%',
-                        objectFit: 'cover',
-                        flexShrink: 0,
-                      }}
-                    />
+                  {t.userId.pictureUrl ? (
+                    <img src={t.userId.pictureUrl} alt={t.userId.username} className="avatar" />
+                  ) : (
+                    <div className="avatar" aria-hidden="true" style={{ display: 'grid', placeItems: 'center' }}>
+                      <span style={{ fontWeight: 800 }}>
+                        {String(t.userId.username || 'U').slice(0, 1).toUpperCase()}
+                      </span>
+                    </div>
                   )}
 
-                  <div style={{ flex: 1 }}>
-                    <div style={{ marginBottom: 4 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div className="thread-meta">
                       <strong>{t.userId.username}</strong>
                       <small
                         className="muted"
-                        style={{ marginLeft: '0.5rem', fontSize: '0.8rem' }}
+                        style={{ fontSize: '0.8rem' }}
                       >
                         • {new Date(t.creationTime).toLocaleString()}
                       </small>
                     </div>
-                    <p style={{ whiteSpace: 'pre-wrap', marginBottom: '0.5rem' }}>
+                    <p style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
                       {t.description}
                     </p>
 
                     {/* Buttons */}
                     <div
-                      style={{
-                        marginTop: 4,
-                        display: 'flex',
-                        gap: '0.5rem',
-                        flexWrap: 'wrap',
-                      }}
+                      className="thread-actions"
                     >
                       {isMine && (
                         <>
                           {!state.editing && !state.deleteConfirm && (
                             <>
-                              <button className="btn" onClick={() => handleEditClick(t._id)}>
+                              <button className="btn btn-secondary" onClick={() => handleEditClick(t._id)}>
                                 Edit
                               </button>
-                              <button className="btn" onClick={() => handleDeleteClick(t._id)}>
+                              <button className="btn btn-secondary" onClick={() => handleDeleteClick(t._id)}>
                                 Delete
                               </button>
                             </>
                           )}
                           {state.deleteConfirm && (
                             <button
-                              className="btn"
-                              style={{ backgroundColor: 'red', color: 'white' }}
+                              className="btn btn-danger"
                               onClick={() => confirmDelete(t._id)}
                             >
                               Confirm Delete
@@ -336,6 +306,7 @@ export default function ForumDetailPage() {
                           {state.editing && (
                             <>
                               <textarea
+                                className="textarea"
                                 placeholder="Add your update"
                                 value={editTexts[t._id]}
                                 onChange={(e) =>
@@ -344,12 +315,7 @@ export default function ForumDetailPage() {
                                     [t._id]: e.target.value,
                                   }))
                                 }
-                                style={{
-                                  width: '100%',
-                                  minHeight: 60,
-                                  padding: '0.5rem',
-                                  marginBottom: '0.5rem',
-                                }}
+                                style={{ minHeight: 80 }}
                               />
                               <button
                                 className="btn"
@@ -365,8 +331,7 @@ export default function ForumDetailPage() {
                       {/* Admin-only delete */}
                       {isAdmin && !isMine && (
                         <button
-                          className="btn"
-                          style={{ backgroundColor: 'red', color: 'white' }}
+                          className="btn btn-danger"
                           onClick={() => confirmDelete(t._id)}
                         >
                           Delete Thread
@@ -380,27 +345,6 @@ export default function ForumDetailPage() {
           </div>
         </div>
       </div>
-
-      <style>
-        {`
-          @media (max-width: 600px) {
-            .forum-sidebar {
-              flex: 1 1 100% !important;
-              position: static !important; /* remove sticky */
-            }
-            .threads-column {
-              flex: 1 1 100% !important;
-            }
-            .card {
-              flex-direction: column !important;
-              align-items: flex-start !important;
-            }
-            .card img {
-              margin-bottom: 0.5rem;
-            }
-          }
-        `}
-      </style>
     </div>
   );
 }

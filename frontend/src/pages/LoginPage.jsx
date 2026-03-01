@@ -21,13 +21,29 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="card">
-      <h2>Login</h2>
-      <form onSubmit={submit} className="form">
-        <input placeholder="Username" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} />
-        <input placeholder="Password" type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
-        <button type="submit" className="btn">Login</button>
-      </form>
+    <div className="container" style={{ maxWidth: 560 }}>
+      <div className="card">
+        <h2 className="page-title" style={{ marginTop: 0 }}>Login</h2>
+        <p className="muted" style={{ marginTop: -6, marginBottom: 16 }}>
+          Welcome back. Sign in to create forums and threads.
+        </p>
+        <form onSubmit={submit} className="form">
+          <input
+            className="input"
+            placeholder="Username"
+            value={form.username}
+            onChange={(e) => setForm({ ...form, username: e.target.value })}
+          />
+          <input
+            className="input"
+            placeholder="Password"
+            type="password"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+          />
+          <button type="submit" className="btn">Login</button>
+        </form>
+      </div>
     </div>
   );
 }
